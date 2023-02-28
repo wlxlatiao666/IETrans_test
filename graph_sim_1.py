@@ -6,6 +6,8 @@ threshold = 0.5
 
 path = "em_E.pk"
 l = pickle.load(open(path, "rb"))
+l_cut = 5
+l = l[:int(len(l) / l_cut)]
 total = len(l) * (len(l) - 1) / 2
 cnt = 0
 
