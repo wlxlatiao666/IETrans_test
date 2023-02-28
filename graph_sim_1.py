@@ -2,10 +2,12 @@
 import pickle
 from tqdm import tqdm
 
-threshold = 0.5
+threshold = 1.0
 
 path = "em_E.pk"
 l = pickle.load(open(path, "rb"))
+l_cut = 10
+l = l[:int(len(l) / l_cut)]
 total = len(l) * (len(l) - 1) / 2
 cnt = 0
 
@@ -14,6 +16,8 @@ for i, graph1 in tqdm(enumerate(l)):
         label1 = graph1["labels"]
         label2 = graph2["labels"]
         inter = len(set(label1).intersection(set(label2)))
+        # if inter > 0:
+        #     cnt = cnt + 1
         rate = inter / (len(label1) + len(label2) - inter)
         if rate >= threshold:
             cnt = cnt + 1
