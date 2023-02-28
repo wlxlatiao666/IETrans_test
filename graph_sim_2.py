@@ -3,23 +3,32 @@ import pickle
 from tqdm import tqdm
 
 threshold = 0.5
+cnt_num = 100
 
 path = "em_E.pk"
 l = pickle.load(open(path, "rb"))
-graph1 = l[2]
-label1 = graph1["labels"]
-len1 = len(label1)
-set1 = set(label1)
 total = len(l) - 1
-cnt = 0
+cnt_lst = []
+# print(l[18]["labels"])
+# print(l[18]["img_path"])
+for i in tqdm(range(cnt_num)):
+    graph1 = l[i]
+    label1 = graph1["labels"]
+    set1 = set(label1)
+    # len1 = len(label1)
+    len1 = len(set1)
+    cnt = 0
+    for graph2 in l[:i] + l[i + 1:]:
+        label2 = graph2["labels"]
+        set2 = set(label2)
+        # inter = len([x for x in label1 if x in label2])
+        inter = len(set1.intersection(set2))
+        rate = inter / (len1 + len(set2) - inter)
+        if rate >= threshold:
+            # print(graph1["img_path"])
+            # print(graph2["img_path"])
+            cnt = cnt + 1
+    cnt_lst.append(cnt)
 
-for graph2 in l[3:]:
-    label2 = graph2["labels"]
-    inter = len(set1.intersection(set(label2)))
-    rate = inter / (len1 + len(label2) - inter)
-    if rate >= threshold:
-        cnt = cnt + 1
-
-print(cnt)
-print(total)
-print(cnt / total)
+print(cnt_lst)
+print(sum(cnt_lst) / (cnt_num * total))
