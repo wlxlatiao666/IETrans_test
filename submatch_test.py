@@ -53,7 +53,7 @@ import functools
 
 gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=.001)  # set affinity function
 K = pygm.utils.build_aff_mat(None, edge1, conn1, None, edge2, conn2, n1, None, n2, None, edge_aff_fn=gaussian_aff)
-
+#
 plt.figure(figsize=(4, 4))
 plt.title(f'Affinity Matrix (size: {K.shape[0]}$\\times${K.shape[1]})')
 plt.imshow(K.numpy(), cmap='Blues')
