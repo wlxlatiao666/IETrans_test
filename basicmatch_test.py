@@ -8,10 +8,12 @@ np.random.seed(1)
 path = "em_E.pk"
 l = pickle.load(open(path, "rb"))
 
-node1 = l[0]["labels"]
+graph1 = l[0]
+graph2 = l[1]
+node1 = graph1["labels"]
 node1 = np.atleast_2d(node1)
 node1 = node1.T
-node2 = l[1]["labels"]
+node2 = graph2["labels"]
 node2 = np.atleast_2d(node2)
 node2 = node2.T
 print(node1.shape[0])
@@ -21,10 +23,10 @@ A2 = np.zeros((node2.shape[0], node2.shape[0]))
 n1 = np.array([node1.shape[0]])
 n2 = np.array([node2.shape[0]])
 
-for triple in l[0]["relations"]:
+for triple in graph1["relations"]:
     A1[triple[0]][triple[1]] = triple[2]
 
-for triple in l[1]["relations"]:
+for triple in graph2["relations"]:
     A2[triple[0]][triple[1]] = triple[2]
 
 conn1, edge1 = pygm.utils.dense_to_sparse(A1)
