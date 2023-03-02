@@ -2,7 +2,7 @@
 import pickle
 from tqdm import tqdm
 
-threshold = 0.5
+threshold = 0.9
 cnt_num = 100
 
 path = "em_E.pk"
@@ -25,8 +25,10 @@ for i in tqdm(range(cnt_num)):
         inter = len(set1.intersection(set2))
         rate = inter / (len1 + len(set2) - inter)
         if rate >= threshold:
-            # print(graph1["img_path"])
-            # print(graph2["img_path"])
+            print(l.index(graph1))
+            print(l.index(graph2))
+            print(graph1["img_path"])
+            print(graph2["img_path"])
             cnt = cnt + 1
     cnt_lst.append(cnt)
 

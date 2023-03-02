@@ -8,8 +8,10 @@ np.random.seed(1)
 path = "em_E.pk"
 l = pickle.load(open(path, "rb"))
 
-graph1 = l[0]
-graph2 = l[1]
+graph1 = l[14]
+graph2 = l[165]
+print(graph1)
+print(graph2)
 node1 = graph1["labels"]
 node1 = np.atleast_2d(node1)
 node1 = node1.T
