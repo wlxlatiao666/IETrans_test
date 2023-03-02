@@ -80,7 +80,7 @@ plt.title('Ground Truth Matching Matrix')
 plt.imshow(X_gt.numpy(), cmap='Blues')
 
 plt.figure(figsize=(8, 4))
-plt.suptitle(f'RRWM Matching Result (acc={(X * X_gt).sum()/ X_gt.sum():.2f})')
+plt.suptitle(f'RRWM Matching Result (acc={(X * X_gt).sum() / X_gt.sum():.2f})')
 ax1 = plt.subplot(1, 2, 1)
 plt.title('Subgraph 1')
 plt.gca().margins(0.4)
@@ -91,5 +91,5 @@ nx.draw_networkx(G2, pos=pos2, node_color=color2)
 for i in range(num_nodes1):
     j = torch.argmax(X[i]).item()
     con = ConnectionPatch(xyA=pos1[i], xyB=pos2[j], coordsA="data", coordsB="data",
-                          axesA=ax1, axesB=ax2, color="green" if X_gt[i,j] == 1 else "red")
+                          axesA=ax1, axesB=ax2, color="green" if X_gt[i, j] == 1 else "red")
     plt.gca().add_artist(con)
