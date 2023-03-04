@@ -5,7 +5,7 @@ from tqdm import tqdm
 threshold = 0.5
 cnt_num = 100
 
-path = "em_E.pk"
+path = "../em_E.pk"
 l = pickle.load(open(path, "rb"))
 total = len(l) - 1
 cnt_lst = []

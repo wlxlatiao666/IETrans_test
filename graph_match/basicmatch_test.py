@@ -6,9 +6,9 @@ import pickle
 pygm.BACKEND = 'numpy'
 np.random.seed(1)
 
-path = "em_E.pk"
+path = "../em_E.pk"
 l = pickle.load(open(path, "rb"))
-vocab = json.load(open("VG-SGG-dicts-with-attri.json", "r"))
+vocab = json.load(open("../VG-SGG-dicts-with-attri.json", "r"))
 idx2lb = {int(k): v for k, v in vocab["idx_to_label"].items()}
 idx2pred = {int(k): v for k, v in vocab["idx_to_predicate"].items()}
 len_lb = len(idx2lb)

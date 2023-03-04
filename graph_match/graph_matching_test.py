@@ -30,7 +30,7 @@ pygm.BACKEND = 'numpy'
 np.random.seed(1)
 threshold = 0.5
 
-path = "em_E.pk"
+path = "../em_E.pk"
 l = pickle.load(open(path, "rb"))
 graph11 = l[0]["labels"]
 for i, graph1 in tqdm(enumerate(l)):
