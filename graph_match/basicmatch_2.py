@@ -54,7 +54,6 @@ for r, pair_cnt_dic in rel_cnt_dic.items():
 num_node_features = 10
 num_edge_features = 10
 sentence = []
-index = 0
 
 for triple in importance_dic:
     sentence.append(list(triple))
@@ -80,6 +79,9 @@ g1_index = 14
 g2_index = 165
 graph1 = l[g1_index]
 graph2 = l[g2_index]
+a = graph1["relations"][:, :2]
+print(a[[3, 1]])
+print([3, 3] in a.tolist())
 # print(graph1)
 # print(graph2)
 node1 = graph1["labels"] / len_lb
@@ -105,15 +107,13 @@ n2 = np.array([node2.shape[0]])
 # conn1, edge1 = pygm.utils.dense_to_sparse(A1)
 # conn2, edge2 = pygm.utils.dense_to_sparse(A2)
 
-conn1 = []
+conn1 = graph1["relations"][:, :2]
 edge1 = []
-conn2 = []
+conn2 = graph2["relations"][:, :2]
 edge2 = []
 for triple in graph1["relations"]:
-    conn1.append([triple[0], triple[1]])
     edge1.append(predfeatures[triple[2] - 1])
 for triple in graph2["relations"]:
-    conn2.append([triple[0], triple[1]])
     edge2.append(predfeatures[triple[2] - 1])
 conn1 = np.array(conn1)
 conn2 = np.array(conn2)
@@ -123,14 +123,14 @@ edge2 = np.array(edge2)
 # ne2 = len(edge2)
 import functools
 
-gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=10.)  # set affinity function
+gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=num_edge_features)  # set affinity function
 K = pygm.utils.build_aff_mat(node1, edge1, conn1, node2, edge2, conn2, n1, None, n2, None, edge_aff_fn=gaussian_aff)
 
 X = pygm.rrwm(K, n1, n2)
 X = pygm.hungarian(X)
 print(X)
 
-X.tolist()
+X = X.tolist()
 for (sub, obj, rel) in graph1["relations"]:
     pair = [X[sub].index(1), X[obj].index(1)]
     if pair in conn2:
@@ -141,7 +141,7 @@ for (sub, obj, rel) in graph1["relations"]:
         if importance_dic[triple1] < importance_dic[triple2]:
             l[g2_index][pair] = rel
         else:
-            l[g1_index][sub][obj] = idx2pred[graph2["relations"][pair[0]][pair[1]]]
+            l[g1_index][sub][obj] = graph2["relations"][pair]
     else:
         pass
 
