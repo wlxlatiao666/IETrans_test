@@ -3,11 +3,13 @@ import pickle
 import sys
 import numpy as np
 import torch
-ratio = float(sys.argv[1])
+
+# ratio = float(sys.argv[1])
+ratio = 1.0
 print(ratio)
 score = json.load(open("score.json", "r"))
 em = pickle.load(open("raw_em_E.pk", "rb"))
-thres = score[int(ratio * len(score))-1]
+thres = score[int(ratio * len(score)) - 1]
 
 n = 0
 rst = []
