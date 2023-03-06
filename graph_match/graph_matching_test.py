@@ -160,6 +160,7 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
                     if (triple1[0], triple2[1], triple1[2]) in all_triplets:
                         l[g1_index]["relations"][index1][2] = rel1
 
+    return
 
 
 for i, graph1 in tqdm(enumerate(l)):
