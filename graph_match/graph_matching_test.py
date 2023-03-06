@@ -20,7 +20,7 @@ lb2idx = {k: int(v) for k, v in vocab["label_to_idx"].items()}
 idx2pred = {int(k): v for k, v in vocab["idx_to_predicate"].items()}
 pred2idx = {k: int(v) for k, v in vocab["predicate_to_idx"].items()}
 len_lb = len(idx2lb)
-len_pred = len(idx2pred)
+# len_pred = len(idx2pred)
 
 l = pickle.load(open(path, "rb"))
 threshold = 0.5
@@ -47,8 +47,6 @@ for i, data in enumerate(l):
             rel_cnt_dic[r_name][pair] = 0
         rel_cnt_dic[r_name][pair] += 1
 
-print(rel_cnt_dic['has'][('boy', 'shirt')])
-
 importance_dic = {}
 all_triplets = []
 for r, pair_cnt_dic in rel_cnt_dic.items():
@@ -60,14 +58,13 @@ for r, pair_cnt_dic in rel_cnt_dic.items():
 for triple in importance_dic:
     all_triplets.append(triple)
 
-num_node_features = 10
-num_edge_features = 10
+num_features = 10
 sentence = []
 
 for triple in importance_dic:
     sentence.append(list(triple))
 
-model = Word2Vec(sentences=sentence, vector_size=num_edge_features, window=2, min_count=1, workers=4)
+model = Word2Vec(sentences=sentence, vector_size=num_features, window=2, min_count=1, workers=4)
 
 predfeatures = []
 for item in idx2pred:
@@ -109,7 +106,7 @@ def match_graphs(g1, g2):
     edge1 = np.array(edge1)
     edge2 = np.array(edge2)
 
-    gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=num_edge_features)  # set affinity function
+    gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=num_features)  # set affinity function
     K = pygm.utils.build_aff_mat(node1, edge1, conn1, node2, edge2, conn2, n1, None, n2, None, edge_aff_fn=gaussian_aff)
 
     X = pygm.rrwm(K, n1, n2)
@@ -117,33 +114,52 @@ def match_graphs(g1, g2):
     return X
 
 
+# def fix_relations(g1, g2, g1_index, g2_index, match):
+#     match = match.tolist()
+#     label1 = g1["labels"]
+#     label2 = g2["labels"]
+#     rel1 = g1["relations"]
+#     rel2 = g2["relations"]
+#
+#     for index1, (sub, obj, rel) in enumerate(rel1):
+#         if 1 not in match[sub] or 1 not in match[obj]:
+#             continue
+#         pair = [match[sub].index(1), match[obj].index(1)]
+#         if pair in rel2[:, :2].tolist():
+#             g2pair_index = rel2[:, :2].tolist().index(pair)
+#             triple1 = (idx2lb[label1[sub]], idx2pred[rel], idx2lb[label1[obj]])
+#             triple2 = (
+#                 idx2lb[label2[pair[0]]], idx2pred[rel2[g2pair_index][2]],
+#                 idx2lb[label2[pair[1]]])
+#             if importance_dic[triple1] < importance_dic[triple2]:
+#                 if (triple2[0], triple1[1], triple2[2]) in all_triplets:
+#                     l[g2_index]["relations"][g2pair_index][2] = rel
+#             else:
+#                 if (triple1[0], triple2[1], triple1[2]) in all_triplets:
+#                     l[g1_index]["relations"][index1][2] = rel2[g2pair_index][2]
+#         else:
+#             pass
+
+
 def fix_relations(g1, g2, g1_index, g2_index, match):
     match = match.tolist()
     label1 = g1["labels"]
     label2 = g2["labels"]
-    rel1 = g1["relations"]
-    rel2 = g2["relations"]
+    relations1 = g1["relations"]
+    relations2 = g2["relations"]
 
-    for index1, (sub, obj, rel) in enumerate(rel1):
-        if 1 not in match[sub] or 1 not in match[obj]:
-            continue
-        pair = [match[sub].index(1), match[obj].index(1)]
-        if pair in rel2[:, :2].tolist():
-            g2pair_index = rel2[:, :2].tolist().index(pair)
-            triple1 = (idx2lb[label1[sub]], idx2pred[rel], idx2lb[label1[obj]])
-            # print(idx2lb[g2["labels"][pair[0]]])
-            # print(idx2pred[g2["relations"][g2pair_index][2]])
-            triple2 = (
-                idx2lb[label2[pair[0]]], idx2pred[rel2[g2pair_index][2]],
-                idx2lb[label2[pair[1]]])
-            if importance_dic[triple1] < importance_dic[triple2]:
-                if (triple2[0], triple1[1], triple2[2]) in all_triplets:
-                    l[g2_index]["relations"][g2pair_index][2] = rel
-            else:
-                if (triple1[0], triple2[1], triple1[2]) in all_triplets:
-                    l[g1_index]["relations"][index1][2] = rel2[g2pair_index][2]
-        else:
-            pass
+    for index1, (sub1, obj1, rel1) in enumerate(relations1):
+        for index2, (sub2, obj2, rel2) in enumerate(relations2):
+            if match[sub1][sub2] == 1 and match[obj1][obj2] == 1:
+                triple1 = (idx2lb[label1[sub1]], idx2pred[rel1], idx2lb[label1[obj1]])
+                triple2 = (idx2lb[label2[sub2]], idx2pred[rel2], idx2lb[label2[obj2]])
+                if importance_dic[triple1] < importance_dic[triple2]:
+                    if (triple2[0], triple1[1], triple2[2]) in all_triplets:
+                        l[g2_index]["relations"][index2][2] = rel1
+                else:
+                    if (triple1[0], triple2[1], triple1[2]) in all_triplets:
+                        l[g1_index]["relations"][index1][2] = rel1
+
 
 
 for i, graph1 in tqdm(enumerate(l)):
