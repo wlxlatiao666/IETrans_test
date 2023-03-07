@@ -39,5 +39,5 @@ for d in em:
     else:
         rst.append(d)
 # pickle.dump(rst, open("em_E.pk"+str(round(ratio, 2)), "wb"))
-pickle.dump(rst, open("em_E.pk", "wb"))
+pickle.dump(rst, open("em_EE.pk", "wb"))
 print(n)
