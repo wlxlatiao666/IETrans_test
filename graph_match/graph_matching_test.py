@@ -89,10 +89,9 @@ def make_model():
 
 
 # 特征提取
-def extract_feature(model, imgpath):
+def extract_feature(model, img):
     model.eval()
 
-    img = cv2.imread(imgpath)
     img = cv2.resize(img, (TARGET_IMG_SIZE, TARGET_IMG_SIZE))
     tensor = img_to_tensor(img)
     tensor = tensor.cuda()
@@ -119,12 +118,30 @@ def sim_graphs(g1, g2, thres):
 
 
 def match_graphs(g1, g2):
-    node1 = g1["labels"] / len_lb
-    node1 = np.atleast_2d(node1)
-    node1 = node1.T
-    node2 = g2["labels"] / len_lb
-    node2 = np.atleast_2d(node2)
-    node2 = node2.T
+    model = make_model()
+
+    node1 = []
+    image1 = cv2.imread(g1['img_path'])
+    for box in g1['boxes']:
+        cropped_image = image1[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
+        node_feature = extract_feature(model, cropped_image)
+        node1.append(node_feature)
+    node1 = np.array(node1)
+    node2 = []
+    image2 = cv2.imread(g2['img_path'])
+    for box in g2['boxes']:
+        cropped_image = image2[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
+        node_feature = extract_feature(model, cropped_image)
+        node2.append(node_feature)
+    node2 = np.array(node2)
+
+    # node1 = g1["labels"] / len_lb
+    # node1 = np.atleast_2d(node1)
+    # node1 = node1.T
+    # node2 = g2["labels"] / len_lb
+    # node2 = np.atleast_2d(node2)
+    # node2 = node2.T
+
     n1 = np.array([node1.shape[0]])
     n2 = np.array([node2.shape[0]])
 
