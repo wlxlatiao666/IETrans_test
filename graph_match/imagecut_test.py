@@ -1,9 +1,9 @@
 import cv2
-
-img=cv2.imread('test1.jpg')
+from PIL import Image
+img=Image.open('test1.jpg')
 
 # Prints Dimensions of the image
-print(img.shape)
+# print(img.shape)
 
 # Display the image
 cv2.imshow("original", img)

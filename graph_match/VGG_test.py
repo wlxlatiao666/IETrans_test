@@ -7,7 +7,7 @@ import torchvision.models as models
 from torch.autograd import Variable
 import torch.cuda
 import torchvision.transforms as transforms
-
+import cv2
 from PIL import Image
 
 num_features = 512
@@ -26,8 +26,8 @@ def make_model():
 def extract_feature(model, imgpath):
     model.eval()  # 必须要有，不然会影响特征提取结果
 
-    img = Image.open(imgpath)  # 读取图片
-    img = img.resize((TARGET_IMG_SIZE, TARGET_IMG_SIZE))
+    img = cv2.imread(imgpath)  # 读取图片
+    img = cv2.resize(img, (TARGET_IMG_SIZE, TARGET_IMG_SIZE))
     tensor = img_to_tensor(img)  # 将图片转化成tensor
     tensor = tensor.cuda()  # 如果只是在cpu上跑的话要将这行去掉
 
