@@ -5,11 +5,14 @@ from tqdm import tqdm
 # extra: ['img_path', 'boxes', 'labels', 'pairs', 'possible_rels', 'rel_logits']
 # intra: ['width', 'height', 'img_path', 'boxes', 'labels', 'relations', 'possible_rels', 'logits']
 
-exp_dir = os.environ.get("EXP")
-code_dir = os.environ.get("SG")
-model_name = sys.argv[1]
-extra_path = os.path.join(exp_dir, "50/{}/predcls/lt/external/relabel".format(model_name), "em_E.pk")
-intra_path = os.path.join(exp_dir, "50/{}/predcls/lt/internal/relabel".format(model_name), "em_E.pk_topk_0.7")
+# exp_dir = os.environ.get("EXP")
+# code_dir = os.environ.get("SG")
+# model_name = sys.argv[1]
+# extra_path = os.path.join(exp_dir, "50/{}/predcls/lt/external/relabel".format(model_name), "em_E.pk")
+# intra_path = os.path.join(exp_dir, "50/{}/predcls/lt/internal/relabel".format(model_name), "em_E.pk_topk_0.7")
+
+extra_path = "em_EE.pk"
+intra_path= "em_E.pk_topk_0.7"
 print(extra_path)
 print(intra_path)
 img_info_path = os.path.join(code_dir, "datasets/vg/image_data.json")
