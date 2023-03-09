@@ -40,7 +40,7 @@ threshold = 0.7
 rel_cnt_dic = {}
 for i, data in enumerate(l):
     labels = data["labels"]
-    logits = data["logits"][:, 1:]
+    # logits = data["logits"][:, 1:]
     relation_tuple = deepcopy(data["relations"])
     sub_idxs, obj_idxs, rels = relation_tuple[:, 0], relation_tuple[:, 1], relation_tuple[:, 2]
     sub_lbs, obj_lbs = labels[sub_idxs], labels[obj_idxs]
