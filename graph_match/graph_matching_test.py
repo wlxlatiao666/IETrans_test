@@ -222,11 +222,9 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
     return
 
 
-# l = l[599:]
 for i, graph1 in tqdm(enumerate(l)):
     for j, graph2 in enumerate(l[i + 1:]):
         if sim_graphs(graph1, graph2, threshold):
-            print(i + j + 1)
             matching_result = match_graphs(graph1, graph2)
             fix_relations(graph1, graph2, i, i + j + 1, matching_result)
 
