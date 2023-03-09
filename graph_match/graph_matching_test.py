@@ -1,3 +1,7 @@
+import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 # test graph matching
 import json
 import torch
@@ -31,7 +35,7 @@ len_lb = len(idx2lb)
 # len_pred = len(idx2pred)
 
 l = pickle.load(open(path, "rb"))
-threshold = 0.5
+threshold = 0.7
 
 rel_cnt_dic = {}
 for i, data in enumerate(l):
@@ -88,6 +92,9 @@ def make_model():
     return model
 
 
+model = make_model()
+
+
 # 特征提取
 def extract_feature(model, img):
     model.eval()
@@ -118,8 +125,6 @@ def sim_graphs(g1, g2, thres):
 
 
 def match_graphs(g1, g2):
-    model = make_model()
-
     node1 = []
     image1 = cv2.imread(g1['img_path'])
     for box in g1['boxes']:

@@ -15,7 +15,7 @@ extra_path = "em_EE.pk"
 intra_path= "em_E.pk_topk_0.7"
 print(extra_path)
 print(intra_path)
-img_info_path = os.path.join(code_dir, "datasets/vg/image_data.json")
+img_info_path = "image_data.json"
 extra_data = pickle.load(open(extra_path, "rb"))
 intra_data = pickle.load(open(intra_path, "rb"))
 img_infos = json.load(open(img_info_path, "r"))
@@ -108,7 +108,7 @@ for i, (img_id, ex_data) in tqdm(enumerate(extra_data.items()), total=len(extra_
     if in_data:
         to_save_data[img_id] = merge_ex_and_in(ex_data, in_data)
 to_save_data = list(to_save_data.values())
-pickle.dump(to_save_data, open("em_E.pk", "wb"))
+pickle.dump(to_save_data, open("em_E1.pk", "wb"))
 
 # stat relations
 print("saved data:", len(to_save_data), sum([len(x["relations"]) for x in to_save_data]) )
