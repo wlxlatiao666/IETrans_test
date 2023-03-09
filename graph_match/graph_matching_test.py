@@ -24,7 +24,7 @@ from PIL import Image
 pygm.BACKEND = 'numpy'
 np.random.seed(1)
 
-path = "../em_E.pk"
+path = "em_E_fixed.pk"
 
 vocab = json.load(open("../VG-SGG-dicts-with-attri.json", "r"))
 idx2lb = {int(k): v for k, v in vocab["idx_to_label"].items()}
@@ -128,10 +128,12 @@ def match_graphs(g1, g2):
     node1 = []
     image1 = cv2.imread(g1['img_path'])
     for box in g1['boxes']:
+        # if box[0]==box[2] or box[1]==box[3]:
         cropped_image = image1[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
         node_feature = extract_feature(model, cropped_image)
         node1.append(node_feature)
     node1 = np.array(node1)
+    print(g2)
     node2 = []
     image2 = cv2.imread(g2['img_path'])
     for box in g2['boxes']:
@@ -220,9 +222,11 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
     return
 
 
+# l = l[599:]
 for i, graph1 in tqdm(enumerate(l)):
     for j, graph2 in enumerate(l[i + 1:]):
         if sim_graphs(graph1, graph2, threshold):
+            print(i + j + 1)
             matching_result = match_graphs(graph1, graph2)
             fix_relations(graph1, graph2, i, i + j + 1, matching_result)
 

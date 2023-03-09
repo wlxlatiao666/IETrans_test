@@ -10,9 +10,11 @@ import torch.cuda
 import torchvision.transforms as transforms
 import numpy as np
 
+test_graph_num = 4784
 num_features = 512
 TARGET_IMG_SIZE = 224
 img_to_tensor = transforms.ToTensor()
+
 
 def make_model():
     model = models.vgg16(pretrained=True).features[:28]  # 其实就是定位到第28层，对照着上面的key看就可以理解
@@ -37,16 +39,19 @@ def extract_feature(model, img):
 
     return result_npy
 
+
 vocab = json.load(open("../VG-SGG-dicts-with-attri.json", "r"))
 idx2lb = {int(k): v for k, v in vocab["idx_to_label"].items()}
 path = "../em_E.pk"
 l = pickle.load(open(path, "rb"))
-boxes = l[0]['boxes']
+print(l[test_graph_num])
+
+boxes = l[test_graph_num]['boxes']
 # box=boxes[0]
 # num=box[0]
-labels = l[0]['labels']
+labels = l[test_graph_num]['labels']
 
-img = cv2.imread('498334.jpg')
+img = cv2.imread(l[test_graph_num]['img_path'])
 
 # Prints Dimensions of the image
 # print(img.shape)
@@ -55,15 +60,19 @@ img = cv2.imread('498334.jpg')
 # cv2.imshow("original", img)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
-model=make_model()
-node1=[]
+# model = make_model()
+# node1 = []
 for i, box in enumerate(boxes):
+    if i==6:
+        box[0]=0
     cropped_image = img[int(box[1]):int(box[3]), int(box[0]):int(box[2])]  # Slicing to crop the image
-    node_feature = extract_feature(model, cropped_image)
-    node1.append(node_feature)
+    # node_feature = extract_feature(model, cropped_image)
+    # node1.append(node_feature)
     # Display the cropped image
-    # cv2.imshow(idx2lb[labels[i]], cropped_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-node1=np.array(node1)
+    if i==5:
+        cv2.imshow(idx2lb[labels[i]], cropped_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+# node1 = np.array(node1)
+# print(node1)
 pass
