@@ -24,7 +24,7 @@ from PIL import Image
 pygm.BACKEND = 'numpy'
 np.random.seed(1)
 
-path = "em_E_fixed.pk"
+path = "./em_E_fixed.pk"
 
 vocab = json.load(open("../VG-SGG-dicts-with-attri.json", "r"))
 idx2lb = {int(k): v for k, v in vocab["idx_to_label"].items()}
