@@ -35,7 +35,7 @@ len_lb = len(idx2lb)
 # len_pred = len(idx2pred)
 
 l = pickle.load(open(path, "rb"))
-threshold = 0.7
+threshold = 0.6
 
 rel_cnt_dic = {}
 for i, data in enumerate(l):
@@ -133,7 +133,7 @@ def match_graphs(g1, g2):
         node_feature = extract_feature(model, cropped_image)
         node1.append(node_feature)
     node1 = np.array(node1)
-    print(g2)
+    # print(g2)
     node2 = []
     image2 = cv2.imread(g2['img_path'])
     for box in g2['boxes']:
@@ -164,6 +164,11 @@ def match_graphs(g1, g2):
     conn2 = np.array(conn2)
     edge1 = np.array(edge1)
     edge2 = np.array(edge2)
+
+    if edge1.shape[0] == 0:
+        edge1 = edge1[:, None]
+    if edge2.shape[0] == 0:
+        edge2 = edge2[:, None]
 
     gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=num_features)  # set affinity function
     K = pygm.utils.build_aff_mat(node1, edge1, conn1, node2, edge2, conn2, n1, None, n2, None, edge_aff_fn=gaussian_aff)

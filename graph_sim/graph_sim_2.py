@@ -2,7 +2,7 @@
 import pickle
 from tqdm import tqdm
 
-threshold = 0.5
+threshold = 0.6
 cnt_num = 100
 
 path = "../em_E.pk"
