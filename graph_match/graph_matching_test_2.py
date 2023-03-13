@@ -35,7 +35,7 @@ len_lb = len(idx2lb)
 # len_pred = len(idx2pred)
 
 l = pickle.load(open(path, "rb"))
-threshold = 0.6
+threshold = 0.7
 
 rel_cnt_dic = {}
 for i, data in enumerate(l):
@@ -209,26 +209,62 @@ def match_graphs(g1, g2):
 #         else:
 #             pass
 
+def overlap(box1, box2):
+    if box1[0] > box2[2] or box2[0] > box1[2]:
+        return False
+    if box1[1] > box2[3] or box2[1] > box1[3]:
+        return False
+    return True
+
 
 def fix_relations(g1, g2, g1_index, g2_index, match):
     match = match.tolist()
     label1 = g1["labels"]
     label2 = g2["labels"]
+    boxes1 = g1["boxes"]
+    boxes2 = g2["boxes"]
     relations1 = g1["relations"]
     relations2 = g2["relations"]
 
+    # ITrans
     for index1, (sub1, obj1, rel1) in enumerate(relations1):
         for index2, (sub2, obj2, rel2) in enumerate(relations2):
             if match[sub1][sub2] == 1 and match[obj1][obj2] == 1:
                 triple1 = (idx2lb[label1[sub1]], idx2pred[rel1], idx2lb[label1[obj1]])
                 triple2 = (idx2lb[label2[sub2]], idx2pred[rel2], idx2lb[label2[obj2]])
-                if importance_dic[triple1] < importance_dic[triple2]:
-                    if (triple2[0], triple1[1], triple2[2]) in all_triplets:
-                        l[g2_index]["relations"][index2][2] = rel1
-                else:
-                    if (triple1[0], triple2[1], triple1[2]) in all_triplets:
-                        l[g1_index]["relations"][index1][2] = rel1
+                new_triple1 = (triple1[0], triple2[1], triple1[2])
+                new_triple2 = (triple2[0], triple1[1], triple2[2])
+                if new_triple1 in all_triplets and importance_dic[new_triple1] < importance_dic[triple1]:
+                    l[g1_index]["relations"][index1][2] = rel1
+                if new_triple2 in all_triplets and importance_dic[new_triple2] < importance_dic[triple2]:
+                    l[g2_index]["relations"][index2][2] = rel2
 
+    # ETrans
+    for index1, (sub1, obj1, rel1) in enumerate(relations1):
+        if 1 not in match[sub1] or 1 not in match[obj1]:
+            continue
+        pair = [match[sub1].index(1), match[obj1].index(1)]
+        if pair in relations2[:, :2].tolist():
+            continue
+        if not overlap(boxes2[pair[0]], boxes2[pair[1]]):
+            continue
+        triple = (idx2lb[label2[pair[0]]], idx2pred[rel1], idx2lb[label2[pair[1]]])
+        if triple in all_triplets:
+            l[g2_index]["relations"] = np.row_stack((l[g2_index]["relations"], [pair[0], pair[1], rel1]))
+
+    match = np.array(match).T
+    match = match.tolist()
+    for index2, (sub2, obj2, rel2) in enumerate(relations2):
+        if 1 not in match[sub2] or 1 not in match[obj2]:
+            continue
+        pair = [match[sub2].index(1), match[obj2].index(1)]
+        if pair in relations1[:, :2].tolist():
+            continue
+        if not overlap(boxes1[pair[0]], boxes1[pair[1]]):
+            continue
+        triple = (idx2lb[label1[pair[0]]], idx2pred[rel2], idx2lb[label1[pair[1]]])
+        if triple in all_triplets:
+            l[g1_index]["relations"] = np.row_stack((l[g1_index]["relations"], [pair[0], pair[1], rel2]))
     return
 
 
