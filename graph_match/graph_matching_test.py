@@ -222,7 +222,7 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
             if match[sub1][sub2] == 1 and match[obj1][obj2] == 1:
                 triple1 = (idx2lb[label1[sub1]], idx2pred[rel1], idx2lb[label1[obj1]])
                 triple2 = (idx2lb[label2[sub2]], idx2pred[rel2], idx2lb[label2[obj2]])
-                if importance_dic[triple1] < importance_dic[triple2]:
+                if importance_dic[triple1] > importance_dic[triple2]:
                     if (triple2[0], triple1[1], triple2[2]) in all_triplets:
                         l[g2_index]["relations"][index2][2] = rel1
                 else:

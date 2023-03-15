@@ -234,9 +234,9 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
                 triple2 = (idx2lb[label2[sub2]], idx2pred[rel2], idx2lb[label2[obj2]])
                 new_triple1 = (triple1[0], triple2[1], triple1[2])
                 new_triple2 = (triple2[0], triple1[1], triple2[2])
-                if new_triple1 in all_triplets and importance_dic[new_triple1] < importance_dic[triple1]:
+                if new_triple1 in all_triplets and importance_dic[new_triple1] > importance_dic[triple1]:
                     l[g1_index]["relations"][index1][2] = rel1
-                if new_triple2 in all_triplets and importance_dic[new_triple2] < importance_dic[triple2]:
+                if new_triple2 in all_triplets and importance_dic[new_triple2] > importance_dic[triple2]:
                     l[g2_index]["relations"][index2][2] = rel2
 
     # ETrans
