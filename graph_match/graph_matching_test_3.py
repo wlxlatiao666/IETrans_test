@@ -120,9 +120,11 @@ def sim_graphs(g1, g2, thres):
     set2 = set(label2)
     inter = len(set1.intersection(set2))
     rate = inter / (len(set1) + len(set2) - inter)
-    if rate >= thres:
-        return True
-    return False
+
+    return rate
+    # if rate >= thres:
+    #     return True
+    # return False
 
 
 def match_graphs(g1, g2):
@@ -273,7 +275,13 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
     return
 
 
+len_intra_data = len(l)
+similarity = [[[0] * len_intra_data] * len_intra_data]
 # l = l[598:]
+for i, graph1 in tqdm(enumerate(l)):
+    for j, graph2 in enumerate(l[i + 1:]):
+        similarity[i][i + j + 1] = sim_graphs(graph1, graph2, threshold)
+
 for i, graph1 in tqdm(enumerate(l)):
     for j, graph2 in enumerate(l[i + 1:]):
         if sim_graphs(graph1, graph2, threshold):

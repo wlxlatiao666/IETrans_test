@@ -127,6 +127,7 @@ for r, pair_cnt_dic in rel_cnt_dic.items():
     for pair in pair_cnt_dic:
         all_triplets.append((r, *pair))
 
+sum = 0
 # use vis_triplet
 for triplet in tqdm(all_triplets):
     # IPython.embed()
@@ -144,6 +145,9 @@ for triplet in tqdm(all_triplets):
     # get data from parents
     # collect all parent data
     idxs, logits = collect_all_parent_data(parents, (triplet[1], triplet[2]), pred2idx[r])
+    if idxs.shape[0] != 0:
+        sum += idxs.shape[0]
+        pass
     _, sorted_idxs = logits.sort(descending=True)
     idxs = idxs[sorted_idxs.numpy()]
     idxs = idxs[0: int(len(idxs) * topk_percent)]

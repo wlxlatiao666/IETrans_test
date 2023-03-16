@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 threshold = 0.6
 cnt_num = 100
+cnt_zero = 0
 
 path = "../em_E.pk"
 l = pickle.load(open(path, "rb"))
@@ -31,6 +32,9 @@ for i in tqdm(range(cnt_num)):
             # print(graph2["img_path"])
             cnt = cnt + 1
     cnt_lst.append(cnt)
+    if cnt == 0:
+        cnt_zero += 1
 
 print(cnt_lst)
+print(cnt_zero)
 print(sum(cnt_lst) / (cnt_num * total))
