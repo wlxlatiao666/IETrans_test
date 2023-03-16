@@ -35,7 +35,8 @@ len_lb = len(idx2lb)
 # len_pred = len(idx2pred)
 
 l = pickle.load(open(path, "rb"))
-threshold = 0.7
+threshold = 0.5
+num_graphs = 5
 
 rel_cnt_dic = {}
 for i, data in enumerate(l):
@@ -120,11 +121,9 @@ def sim_graphs(g1, g2, thres):
     set2 = set(label2)
     inter = len(set1.intersection(set2))
     rate = inter / (len(set1) + len(set2) - inter)
-
-    return rate
-    # if rate >= thres:
-    #     return True
-    # return False
+    if rate >= thres:
+        return True
+    return False
 
 
 def match_graphs(g1, g2):
@@ -275,18 +274,19 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
     return
 
 
-len_intra_data = len(l)
-similarity = [[[0] * len_intra_data] * len_intra_data]
+# len_intra_data = len(l)
+# similarity = [[[0] * len_intra_data] * len_intra_data]
 # l = l[598:]
-for i, graph1 in tqdm(enumerate(l)):
-    for j, graph2 in enumerate(l[i + 1:]):
-        similarity[i][i + j + 1] = sim_graphs(graph1, graph2, threshold)
 
 for i, graph1 in tqdm(enumerate(l)):
+    num_matched_graphs = 0
     for j, graph2 in enumerate(l[i + 1:]):
         if sim_graphs(graph1, graph2, threshold):
             matching_result = match_graphs(graph1, graph2)
             fix_relations(graph1, graph2, i, i + j + 1, matching_result)
+            num_matched_graphs += 1
+            if num_matched_graphs >= num_graphs:
+                break
 
-print(sum)
-# pickle.dump(l, open("em_E_test.pk", "wb"))
+# print(sum)
+pickle.dump(l, open("em_E_test.pk", "wb"))
