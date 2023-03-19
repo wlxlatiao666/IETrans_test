@@ -145,9 +145,9 @@ for triplet in tqdm(all_triplets):
     # get data from parents
     # collect all parent data
     idxs, logits = collect_all_parent_data(parents, (triplet[1], triplet[2]), pred2idx[r])
-    if idxs.shape[0] != 0:
-        sum += idxs.shape[0]
-        pass
+    # if idxs.shape[0] != 0:
+    #     sum += idxs.shape[0]
+    #     pass
     _, sorted_idxs = logits.sort(descending=True)
     idxs = idxs[sorted_idxs.numpy()]
     idxs = idxs[0: int(len(idxs) * topk_percent)]
@@ -156,7 +156,10 @@ for triplet in tqdm(all_triplets):
     idxs = idxs[mask]
     for index in idxs:
         i, j = all_triplet_idxs[index]
+        if i <= 1000:
+            sum += 1
         l[i]["relations"][j, 2] = pred2idx[r] + 1
     # modify relations
     all_changes[idxs] = importance_dic[triplet]
+print(sum)
 pickle.dump(l, open("em_E.pk_topk_" + str(round(topk_percent, 3)), "wb"))

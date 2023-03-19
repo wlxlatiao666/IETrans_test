@@ -72,6 +72,7 @@ for triple in importance_dic:
     all_triplets.append(triple)
 
 num_features = 512
+sum1 = 0
 TARGET_IMG_SIZE = 224
 img_to_tensor = transforms.ToTensor()
 sentence = []
@@ -226,6 +227,7 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
     boxes2 = g2["boxes"]
     relations1 = g1["relations"]
     relations2 = g2["relations"]
+    sum2 = 0
 
     # ITrans
     for index1, (sub1, obj1, rel1) in enumerate(relations1):
@@ -237,8 +239,10 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
                 new_triple2 = (triple2[0], triple1[1], triple2[2])
                 if new_triple1 in all_triplets and importance_dic[new_triple1] > importance_dic[triple1]:
                     l[g1_index]["relations"][index1][2] = rel1
+                    sum2 += 1
                 if new_triple2 in all_triplets and importance_dic[new_triple2] > importance_dic[triple2]:
                     l[g2_index]["relations"][index2][2] = rel2
+                    # sum2 += 1
 
     # ETrans
     for index1, (sub1, obj1, rel1) in enumerate(relations1):
@@ -252,6 +256,7 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
         triple = (idx2lb[label2[pair[0]]], idx2pred[rel1], idx2lb[label2[pair[1]]])
         if triple in all_triplets:
             l[g2_index]["relations"] = np.row_stack((l[g2_index]["relations"], [pair[0], pair[1], rel1]))
+            # sum2 += 1
 
     match = np.array(match).T
     match = match.tolist()
@@ -266,8 +271,9 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
         triple = (idx2lb[label1[pair[0]]], idx2pred[rel2], idx2lb[label1[pair[1]]])
         if triple in all_triplets:
             l[g1_index]["relations"] = np.row_stack((l[g1_index]["relations"], [pair[0], pair[1], rel2]))
+            # sum2 += 1
 
-    return
+    return sum2
 
 
 # len_intra_data = len(l)
@@ -279,9 +285,12 @@ for i, graph1 in tqdm(enumerate(l)):
     for j, graph2 in enumerate(l[i + 1:]):
         if sim_graphs(graph1, graph2, threshold):
             matching_result = match_graphs(graph1, graph2)
-            fix_relations(graph1, graph2, i, i + j + 1, matching_result)
+            sum1 += fix_relations(graph1, graph2, i, i + j + 1, matching_result)
             num_matched_graphs += 1
             if num_matched_graphs >= num_graphs:
                 break
+    if i == 1000:
+        break
 
-pickle.dump(l, open("em_E_test.pk", "wb"))
+print(sum1)
+# pickle.dump(l, open("em_E_test.pk", "wb"))
