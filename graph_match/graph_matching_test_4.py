@@ -86,6 +86,19 @@ predfeatures = []
 for item in idx2pred:
     predfeatures.append(list(model.wv[idx2pred[item]]))
 
+freq_rels_num = [31, 20, 22, 30, 48, 29, 50, 1, 21, 8, 43]
+all_rels_num = [i + 1 for i in range(50)]
+complex_rels_num = [i for i in all_rels_num if i not in freq_rels_num]
+
+
+def is_complex(graph):
+    rels = graph["relations"]
+    for rel in rels:
+        if rel[2] in complex_rels_num:
+            return True
+
+    return False
+
 
 def make_model():
     model = models.vgg16(pretrained=True).features[:28]  # 其实就是定位到第28层，对照着上面的key看就可以理解
@@ -114,16 +127,48 @@ def extract_feature(model, img):
     return result_npy
 
 
-def sim_graphs(g1, g2, thres):
+def sim_graphs(g1, g2):
     label1 = g1["labels"]
-    set1 = set(label1)
     label2 = g2["labels"]
-    set2 = set(label2)
-    inter = len(set1.intersection(set2))
-    rate = inter / (len(set1) + len(set2) - inter)
-    if rate >= thres:
-        return True
+    rels = g2["relations"]
+
+    for rel in rels:
+        if label2[rel[0]] in label1 and label2[rel[1]] in label1 and rel[2] in complex_rels_num:
+            return True
+
     return False
+
+
+def sub_graph(father, son):
+    label_father = father["labels"]
+    label_son = son["labels"]
+    old_rels = son["relations"]
+    new_labels = []
+    new_rels = []
+
+    for rel in old_rels:
+        if label_son[rel[0]] in label_father and label_son[rel[1]] in label_father and rel[2] in complex_rels_num:
+            new_rels.append(rel)
+
+    if len(new_rels) == 0:
+        return None
+
+    for rel in new_rels:
+        new_labels.append()
+
+    return son
+
+
+# def sim_graphs(g1, g2, thres):
+#     label1 = g1["labels"]
+#     set1 = set(label1)
+#     label2 = g2["labels"]
+#     set2 = set(label2)
+#     inter = len(set1.intersection(set2))
+#     rate = inter / (len(set1) + len(set2) - inter)
+#     if rate >= thres:
+#         return True
+#     return False
 
 
 def match_graphs(g1, g2):
@@ -236,44 +281,8 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
                 triple1 = (idx2lb[label1[sub1]], idx2pred[rel1], idx2lb[label1[obj1]])
                 triple2 = (idx2lb[label2[sub2]], idx2pred[rel2], idx2lb[label2[obj2]])
                 new_triple1 = (triple1[0], triple2[1], triple1[2])
-                new_triple2 = (triple2[0], triple1[1], triple2[2])
                 if new_triple1 in all_triplets and importance_dic[new_triple1] > importance_dic[triple1]:
                     l[g1_index]["relations"][index1][2] = rel1
-                    sum2 += 1
-                if new_triple2 in all_triplets and importance_dic[new_triple2] > importance_dic[triple2]:
-                    l[g2_index]["relations"][index2][2] = rel2
-                    # sum2 += 1
-
-    # ETrans
-    for index1, (sub1, obj1, rel1) in enumerate(relations1):
-        if 1 not in match[sub1] or 1 not in match[obj1]:
-            continue
-        pair = [match[sub1].index(1), match[obj1].index(1)]
-        if pair in relations2[:, :2].tolist():
-            continue
-        if not overlap(boxes2[pair[0]], boxes2[pair[1]]):
-            continue
-        triple = (idx2lb[label2[pair[0]]], idx2pred[rel1], idx2lb[label2[pair[1]]])
-        if triple in all_triplets:
-            l[g2_index]["relations"] = np.row_stack((l[g2_index]["relations"], [pair[0], pair[1], rel1]))
-            # sum2 += 1
-
-    match = np.array(match).T
-    match = match.tolist()
-    for index2, (sub2, obj2, rel2) in enumerate(relations2):
-        if 1 not in match[sub2] or 1 not in match[obj2]:
-            continue
-        pair = [match[sub2].index(1), match[obj2].index(1)]
-        if pair in relations1[:, :2].tolist():
-            continue
-        if not overlap(boxes1[pair[0]], boxes1[pair[1]]):
-            continue
-        triple = (idx2lb[label1[pair[0]]], idx2pred[rel2], idx2lb[label1[pair[1]]])
-        if triple in all_triplets:
-            l[g1_index]["relations"] = np.row_stack((l[g1_index]["relations"], [pair[0], pair[1], rel2]))
-            # sum2 += 1
-
-    return sum2
 
 
 # len_intra_data = len(l)
@@ -282,15 +291,15 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
 
 for i, graph1 in tqdm(enumerate(l)):
     num_matched_graphs = 0
-    for j, graph2 in enumerate(l[i + 1:]):
-        if sim_graphs(graph1, graph2, threshold):
+    for j, graph2 in enumerate(l[:i] + l[i + 1:]):
+        if sim_graphs(graph1, graph2):
             matching_result = match_graphs(graph1, graph2)
-            sum1 += fix_relations(graph1, graph2, i, i + j + 1, matching_result)
+            fix_relations(graph1, graph2, i, i + j + 1, matching_result)
             num_matched_graphs += 1
-            if num_matched_graphs >= num_graphs:
-                break
-    if i == 1000:
+            # if num_matched_graphs >= num_graphs:
+            #     break
+    if i == 100:
         break
 
 print(sum1)
-# pickle.dump(l, open("em_E_test.pk", "wb"))
+pickle.dump(l, open("em_E_100.pk", "wb"))

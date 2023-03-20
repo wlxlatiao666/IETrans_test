@@ -156,6 +156,7 @@ for triplet in tqdm(all_triplets):
     idxs = idxs[mask]
     for index in idxs:
         i, j = all_triplet_idxs[index]
+        path = l[i]["img_path"]
         if i <= 1000:
             sum += 1
         l[i]["relations"][j, 2] = pred2idx[r] + 1
