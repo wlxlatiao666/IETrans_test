@@ -26,7 +26,7 @@ def to_dic(data):
 
 
 path1 = "../em_E.pk"
-path2 = "../graph_match/em_E_100.pk"
+path2 = "../graph_match/em_E_5.pk"
 path3 = "../em_E.pk_topk_0.7"
 path4 = "../em_E1.pk"
 

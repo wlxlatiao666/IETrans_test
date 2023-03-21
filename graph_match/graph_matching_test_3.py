@@ -36,7 +36,7 @@ len_lb = len(idx2lb)
 
 l = pickle.load(open(path, "rb"))
 threshold = 0.5
-num_graphs = 5
+num_graphs = 10
 
 rel_cnt_dic = {}
 for i, data in enumerate(l):
@@ -84,6 +84,19 @@ model = Word2Vec(sentences=sentence, vector_size=num_features, window=2, min_cou
 predfeatures = []
 for item in idx2pred:
     predfeatures.append(list(model.wv[idx2pred[item]]))
+
+freq_rels_num = [31, 20, 22, 30, 48, 29, 50, 1, 21, 8, 43]
+all_rels_num = [i + 1 for i in range(50)]
+complex_rels_num = [i for i in all_rels_num if i not in freq_rels_num]
+
+
+def is_complex(graph):
+    rels = graph["relations"]
+    for rel in rels:
+        if rel[2] in complex_rels_num:
+            return True
+
+    return False
 
 
 def make_model():
@@ -236,9 +249,9 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
                 new_triple1 = (triple1[0], triple2[1], triple1[2])
                 new_triple2 = (triple2[0], triple1[1], triple2[2])
                 if new_triple1 in all_triplets and importance_dic[new_triple1] > importance_dic[triple1]:
-                    l[g1_index]["relations"][index1][2] = rel1
+                    l[g1_index]["relations"][index1][2] = rel2
                 if new_triple2 in all_triplets and importance_dic[new_triple2] > importance_dic[triple2]:
-                    l[g2_index]["relations"][index2][2] = rel2
+                    l[g2_index]["relations"][index2][2] = rel1
 
     # ETrans
     for index1, (sub1, obj1, rel1) in enumerate(relations1):
@@ -250,7 +263,7 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
         if not overlap(boxes2[pair[0]], boxes2[pair[1]]):
             continue
         triple = (idx2lb[label2[pair[0]]], idx2pred[rel1], idx2lb[label2[pair[1]]])
-        if triple in all_triplets:
+        if triple in all_triplets and rel1 in complex_rels_num:
             l[g2_index]["relations"] = np.row_stack((l[g2_index]["relations"], [pair[0], pair[1], rel1]))
 
     match = np.array(match).T
@@ -264,7 +277,7 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
         if not overlap(boxes1[pair[0]], boxes1[pair[1]]):
             continue
         triple = (idx2lb[label1[pair[0]]], idx2pred[rel2], idx2lb[label1[pair[1]]])
-        if triple in all_triplets:
+        if triple in all_triplets and rel2 in complex_rels_num:
             l[g1_index]["relations"] = np.row_stack((l[g1_index]["relations"], [pair[0], pair[1], rel2]))
 
     return
@@ -274,14 +287,17 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
 # similarity = [[[0] * len_intra_data] * len_intra_data]
 # l = l[598:]
 
-for i, graph1 in tqdm(enumerate(l)):
+for i in tqdm(range(len(l))):
     num_matched_graphs = 0
-    for j, graph2 in enumerate(l[i + 1:]):
-        if sim_graphs(graph1, graph2, threshold):
-            matching_result = match_graphs(graph1, graph2)
-            fix_relations(graph1, graph2, i, i + j + 1, matching_result)
+    for j in range(i + 1, len(l)):
+        if sim_graphs(l[i], l[j], threshold) and is_complex(l[j]):
+            matching_result = match_graphs(l[i], l[j])
+            fix_relations(l[i], l[j], i, j, matching_result)
             num_matched_graphs += 1
             if num_matched_graphs >= num_graphs:
                 break
+    # print(i)
+    # if i == 100:
+    #     break
 
-pickle.dump(l, open("em_E_test.pk", "wb"))
+pickle.dump(l, open("em_E_100.pk", "wb"))

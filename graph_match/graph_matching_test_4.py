@@ -141,20 +141,45 @@ def sim_graphs(g1, g2):
 
 def sub_graph(father, son):
     label_father = father["labels"]
-    label_son = son["labels"]
+    rels_father = father["relations"]
+    old_label = son["labels"]
+    old_boxes = son["boxes"]
     old_rels = son["relations"]
     new_labels = []
+    new_boxes = []
     new_rels = []
+    old_idxes = []
 
-    for rel in old_rels:
-        if label_son[rel[0]] in label_father and label_son[rel[1]] in label_father and rel[2] in complex_rels_num:
-            new_rels.append(rel)
+    for rel1 in rels_father:
+        for rel2 in old_rels:
+            if label_father[rel1[0]] == old_label[rel2[0]] and label_father[rel1[1]] == old_label[rel2[1]] and \
+                    rel2[2] in complex_rels_num:
+                new_rels.append(rel2)
+
+    # for rel in old_rels:
+    #     if old_label[rel[0]] in label_father and old_label[rel[1]] in label_father and rel[2] in complex_rels_num:
+    #         new_rels.append(rel)
 
     if len(new_rels) == 0:
         return None
 
-    for rel in new_rels:
-        new_labels.append()
+    for i, rel in enumerate(new_rels):
+        for j in (0, 1):
+            if rel[j] not in old_idxes:
+                old_idxes.append(rel[j])
+                new_labels.append(old_label[rel[j]])
+                new_boxes.append(old_boxes[rel[j]])
+                rel[j] = len(old_idxes) - 1
+            else:
+                rel[j] = old_idxes.index(rel[j])
+        new_rels[i] = rel
+
+    new_labels = np.array(new_labels)
+    new_boxes = np.array(new_boxes)
+    new_rels = np.array(new_rels)
+    son["labels"] = new_labels
+    son["boxes"] = new_boxes
+    son["relations"] = new_rels
 
     return son
 
@@ -230,32 +255,6 @@ def match_graphs(g1, g2):
     return X
 
 
-# def fix_relations(g1, g2, g1_index, g2_index, match):
-#     match = match.tolist()
-#     label1 = g1["labels"]
-#     label2 = g2["labels"]
-#     rel1 = g1["relations"]
-#     rel2 = g2["relations"]
-#
-#     for index1, (sub, obj, rel) in enumerate(rel1):
-#         if 1 not in match[sub] or 1 not in match[obj]:
-#             continue
-#         pair = [match[sub].index(1), match[obj].index(1)]
-#         if pair in rel2[:, :2].tolist():
-#             g2pair_index = rel2[:, :2].tolist().index(pair)
-#             triple1 = (idx2lb[label1[sub]], idx2pred[rel], idx2lb[label1[obj]])
-#             triple2 = (
-#                 idx2lb[label2[pair[0]]], idx2pred[rel2[g2pair_index][2]],
-#                 idx2lb[label2[pair[1]]])
-#             if importance_dic[triple1] < importance_dic[triple2]:
-#                 if (triple2[0], triple1[1], triple2[2]) in all_triplets:
-#                     l[g2_index]["relations"][g2pair_index][2] = rel
-#             else:
-#                 if (triple1[0], triple2[1], triple1[2]) in all_triplets:
-#                     l[g1_index]["relations"][index1][2] = rel2[g2pair_index][2]
-#         else:
-#             pass
-
 def overlap(box1, box2):
     if box1[0] > box2[2] or box2[0] > box1[2]:
         return False
@@ -264,15 +263,12 @@ def overlap(box1, box2):
     return True
 
 
-def fix_relations(g1, g2, g1_index, g2_index, match):
+def fix_relations(g1, g2, g1_index, match):
     match = match.tolist()
     label1 = g1["labels"]
     label2 = g2["labels"]
-    boxes1 = g1["boxes"]
-    boxes2 = g2["boxes"]
     relations1 = g1["relations"]
     relations2 = g2["relations"]
-    sum2 = 0
 
     # ITrans
     for index1, (sub1, obj1, rel1) in enumerate(relations1):
@@ -282,24 +278,28 @@ def fix_relations(g1, g2, g1_index, g2_index, match):
                 triple2 = (idx2lb[label2[sub2]], idx2pred[rel2], idx2lb[label2[obj2]])
                 new_triple1 = (triple1[0], triple2[1], triple1[2])
                 if new_triple1 in all_triplets and importance_dic[new_triple1] > importance_dic[triple1]:
-                    l[g1_index]["relations"][index1][2] = rel1
+                    l[g1_index]["relations"][index1][2] = rel2
 
 
 # len_intra_data = len(l)
 # similarity = [[[0] * len_intra_data] * len_intra_data]
 # l = l[598:]
 
-for i, graph1 in tqdm(enumerate(l)):
+for i in range(len(l)):
     num_matched_graphs = 0
-    for j, graph2 in enumerate(l[:i] + l[i + 1:]):
-        if sim_graphs(graph1, graph2):
-            matching_result = match_graphs(graph1, graph2)
-            fix_relations(graph1, graph2, i, i + j + 1, matching_result)
-            num_matched_graphs += 1
+    for j in range(len(l)):
+        if i == j:
+            continue
+        subgraph = sub_graph(l[i], l[j])
+        if subgraph != None:
+            matching_result = match_graphs(l[i], subgraph)
+            fix_relations(l[i], subgraph, i, matching_result)
+            # num_matched_graphs += 1
             # if num_matched_graphs >= num_graphs:
             #     break
-    if i == 100:
+    print(i)
+    if i == 5:
         break
 
-print(sum1)
-pickle.dump(l, open("em_E_100.pk", "wb"))
+# print(sum1)
+pickle.dump(l, open("em_E_5.pk", "wb"))
