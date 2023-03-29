@@ -40,13 +40,14 @@ def extract_feature(model, img):
     return result_npy
 
 
-path = "../em_E.pk"
+path = "../raw_em_E.pk"
 
 vocab = json.load(open("../VG-SGG-dicts-with-attri.json", "r"))
 idx2lb = {int(k): v for k, v in vocab["idx_to_label"].items()}
 lb2idx = {k: int(v) for k, v in vocab["label_to_idx"].items()}
 idx2pred = {int(k): v for k, v in vocab["idx_to_predicate"].items()}
 pred2idx = {k: int(v) for k, v in vocab["predicate_to_idx"].items()}
+# labelcnt = {k: int(v) for k, v in vocab["object_count"].items()}
 len_lb = len(idx2lb)
 
 l = pickle.load(open(path, "rb"))
@@ -60,11 +61,16 @@ for graph in tqdm(l):
     for box, label in zip(boxes, labels):
         cropped_image = image[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
         feature = extract_feature(model, cropped_image)
-        lb_feature[label] += feature
-        lb_count[label] += 1
+        lb_feature[label - 1] += feature
+        lb_count[label - 1] += 1
 
 for i in range(len_lb):
     lb_feature[i] /= lb_count[i]
 
+# for label in labelcnt:
+#     print(label)
+#     print(labelcnt[label])
+#     print(lb_count[lb2idx[label] - 1])
+# pass
 # print(lb_feature)
 np.save('lb_feature', lb_feature)
