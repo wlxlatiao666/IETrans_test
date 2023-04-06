@@ -12,7 +12,7 @@ from tqdm import tqdm
 # intra_path = os.path.join(exp_dir, "50/{}/predcls/lt/internal/relabel".format(model_name), "em_E.pk_topk_0.7")
 
 extra_path = "em_EE.pk"
-intra_path= "em_E.pk_topk_0.7"
+intra_path= "em_E_329.pk_topk_0.7"
 print(extra_path)
 print(intra_path)
 img_info_path = "image_data.json"
@@ -108,7 +108,7 @@ for i, (img_id, ex_data) in tqdm(enumerate(extra_data.items()), total=len(extra_
     if in_data:
         to_save_data[img_id] = merge_ex_and_in(ex_data, in_data)
 to_save_data = list(to_save_data.values())
-pickle.dump(to_save_data, open("em_E1.pk", "wb"))
+pickle.dump(to_save_data, open("em_E1_329.pk", "wb"))
 
 # stat relations
 print("saved data:", len(to_save_data), sum([len(x["relations"]) for x in to_save_data]) )

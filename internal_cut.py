@@ -9,7 +9,7 @@ import IPython
 
 # topk_percent = float(sys.argv[1])
 topk_percent = 0.7
-path = "em_E.pk"
+path = "em_E_329.pk"
 
 vocab = json.load(open("VG-SGG-dicts-with-attri.json", "r"))
 idx2lb = {int(k): v for k, v in vocab["idx_to_label"].items()}
@@ -163,4 +163,4 @@ for triplet in tqdm(all_triplets):
     # modify relations
     all_changes[idxs] = importance_dic[triplet]
 print(sum)
-pickle.dump(l, open("em_E.pk_topk_" + str(round(topk_percent, 3)), "wb"))
+pickle.dump(l, open("em_E_329.pk_topk_" + str(round(topk_percent, 3)), "wb"))
